@@ -7,6 +7,7 @@ import android.os.Looper
 import android.view.View
 import android.widget.ImageButton
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.SimpleExoPlayer
 import com.google.android.exoplayer2.source.MediaSource
@@ -17,7 +18,11 @@ import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
 import com.google.android.exoplayer2.util.Util
 import com.raveendra.testexoplayer.R
 import com.raveendra.testexoplayer.utility.Constants
+import com.raveendra.testexoplayer.view.PreviewFrameSeekBar
+import com.raveendra.testexoplayer.view.PreviewLoader
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 
 
 class MainActivity : AppCompatActivity() {
@@ -29,15 +34,22 @@ class MainActivity : AppCompatActivity() {
     private lateinit var pauseButton: ImageButton
     private lateinit var playButton: ImageButton
     private lateinit var player: SimpleExoPlayer
+    private lateinit var previewSeekbar: PreviewFrameSeekBar
     private var isLauncher = false
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        pauseButton = playerView.findViewById(R.id.exo_pause)
-        playButton = playerView.findViewById(R.id.exo_play)
+        initializeView()
         aspectRatioContainer.setAspectRatio(16f / 9)
         initializePlayer()
+        initializePreviewSeekbar()
         delayLaunch()
+    }
+
+    private fun initializeView() {
+        previewSeekbar = findViewById(R.id.previewFrameSeekBar)
+        pauseButton = playerView.findViewById(R.id.exo_pause)
+        playButton = playerView.findViewById(R.id.exo_play)
     }
 
     private fun initializePlayer() {
@@ -117,5 +129,22 @@ class MainActivity : AppCompatActivity() {
         super.onDestroy()
     }
 
+    //Preview Seekbar
+    private fun initializePreviewSeekbar() {
+        lifecycleScope.launchWhenStarted {
+            val videoPreviewLoader = PreviewLoader(
+                coroutineScope = this,
+                context = this@MainActivity,
+                url = Constants.VIDEO_URL
+            )
+
+            previewSeekbar.setPreviewLoader(videoPreviewLoader)
+
+            while (isActive) {
+                previewSeekbar.setSeekbarUpdate(player)
+                delay(1000)
+            }
+        }
+    }
 
 }
