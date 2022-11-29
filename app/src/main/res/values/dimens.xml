@@ -1,3 +1,7 @@
 <resources>
     <dimen name="fab_margin">16dp</dimen>
+    <dimen name="frame_width">160dp</dimen>
+    <dimen name="frame_height">100dp</dimen>
+    <dimen name="margin">8dp</dimen>
+    <dimen name="seekbar_padding">12dp</dimen>
 </resources>
